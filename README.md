@@ -60,6 +60,56 @@
 - 压缩文件: `.zip`, `.tar`, `.gz`, `.rar`, `.7z`
 - 其他文件: `.map`, `.manifest`, `.webmanifest`
 
+~~~
+代码中的  “静态资源文件不重定向“ 是啥目的？ 是因为cloudfront + lambda必须这么设计吗？ 这个和nginx+flask的功能存在差异吗？
+
+> 这是一个非常好的问题！让我详细解释"静态资源文件不重定向"的设计目的和技术原因。
+
+## 🎯 "静态资源文件不重定向"的设计目的
+
+### 1. 避免无限重定向循环
+
+#### 问题场景
+javascript
+// 如果没有静态资源过滤
+/website1/style.css (不存在) → /website1/index.html
+/website1/index.html 中引用 → /website1/style.css
+/website1/style.css (仍然不存在) → /website1/index.html
+// 形成无限循环
+
+
+#### 解决方案
+javascript
+// 静态资源过滤逻辑
+const staticExtensions = ['.css', '.js', '.png', '.jpg', '.svg'];
+if (staticExtensions.some(ext => uri.endsWith(ext))) {
+    return false; // 不重定向，直接返回404/403
+}
+
+
+### 2. 保持Web应用的正常行为
+
+#### 正确的Web应用行为
+• **HTML页面不存在** → 重定向到index.html（用户友好）
+• **CSS/JS/图片不存在** → 返回404（让浏览器知道资源缺失）
+
+#### 为什么这样设计？
+html
+<!-- index.html 中的资源引用 -->
+<link rel="stylesheet" href="/website1/missing-style.css">
+<script src="/website1/missing-script.js"></script>
+<img src="/website1/missing-image.png">
+
+
+如果静态资源也重定向到index.html：
+• CSS加载会得到HTML内容 → 样式破坏
+• JS加载会得到HTML内容 → 脚本错误
+• 图片加载会得到HTML内容 → 图片显示异常
+
+~~~
+
+
+
 ## 快速开始
 
 ### 前置条件
