@@ -1,0 +1,132 @@
+{
+  "project": {
+    "name": "CloudFront Universal 404 Redirect System",
+    "version": "1.0.0",
+    "description": "Universal micro-frontend 404 redirect system using CloudFront and Lambda@Edge",
+    "created": "2025-07-30",
+    "author": "AWS Solutions Team"
+  },
+  "aws": {
+    "region": "us-east-1",
+    "lambda": {
+      "functionName": "micro-frontend-404-poc-frankfurt-404-redirect",
+      "runtime": "nodejs18.x",
+      "timeout": 5,
+      "memorySize": 128,
+      "role": "arn:aws:iam::153705321444:role/lambda-edge-execution-role"
+    },
+    "cloudfront": {
+      "distributionId": "E325IR6NR50F34",
+      "domain": "d1234567890123.cloudfront.net"
+    },
+    "s3": {
+      "bucket": "micro-frontend-404-poc-frankfurt-153705321444-eu-central-1",
+      "region": "eu-central-1"
+    }
+  },
+  "features": {
+    "universalSubdirectorySupport": true,
+    "chineseCharacterSupport": true,
+    "specialCharacterSupport": true,
+    "staticResourceFiltering": true,
+    "multiLevelPathRedirect": true,
+    "rootFallbackMechanism": true,
+    "corsSupport": true,
+    "customHeaders": true
+  },
+  "staticResourceExtensions": [
+    ".html", ".htm",
+    ".css", ".scss", ".sass", ".less",
+    ".js", ".mjs", ".jsx", ".ts", ".tsx",
+    ".png", ".jpg", ".jpeg", ".gif", ".svg", ".ico", ".webp", ".bmp",
+    ".woff", ".woff2", ".ttf", ".otf", ".eot",
+    ".pdf", ".txt", ".doc", ".docx", ".xls", ".xlsx", ".ppt", ".pptx",
+    ".json", ".xml", ".csv", ".yaml", ".yml",
+    ".mp4", ".mp3", ".avi", ".mov", ".wmv", ".flv", ".webm", ".ogg",
+    ".zip", ".tar", ".gz", ".rar", ".7z",
+    ".map", ".manifest", ".webmanifest"
+  ],
+  "testCases": {
+    "basicRedirects": [
+      {
+        "name": "Subdirectory access redirect",
+        "url": "/website1/",
+        "expectedStatus": 302,
+        "expectedLocation": "/website1/index.html"
+      },
+      {
+        "name": "Subdirectory access redirect (no slash)",
+        "url": "/website2",
+        "expectedStatus": 302,
+        "expectedLocation": "/website2/index.html"
+      },
+      {
+        "name": "Subdirectory 404 redirect",
+        "url": "/website1/missing-page",
+        "expectedStatus": 302,
+        "expectedLocation": "/website1/index.html"
+      }
+    ],
+    "chineseCharacters": [
+      {
+        "name": "Chinese subdirectory redirect",
+        "url": "/产品/",
+        "expectedStatus": 302,
+        "expectedLocation": "/产品/index.html"
+      },
+      {
+        "name": "Chinese subdirectory 404 redirect",
+        "url": "/产品/详情",
+        "expectedStatus": 302,
+        "expectedLocation": "/产品/index.html"
+      }
+    ],
+    "specialCharacters": [
+      {
+        "name": "Hyphen subdirectory",
+        "url": "/app-v2/",
+        "expectedStatus": 302,
+        "expectedLocation": "/app-v2/index.html"
+      },
+      {
+        "name": "Underscore subdirectory",
+        "url": "/app_v3/component",
+        "expectedStatus": 302,
+        "expectedLocation": "/app_v3/index.html"
+      }
+    ],
+    "staticResources": [
+      {
+        "name": "CSS file access",
+        "url": "/website1/style.css",
+        "expectedStatus": 403,
+        "shouldNotRedirect": true
+      },
+      {
+        "name": "JavaScript file access",
+        "url": "/website1/app.js",
+        "expectedStatus": 403,
+        "shouldNotRedirect": true
+      }
+    ]
+  },
+  "performance": {
+    "targetResponseTime": 1200,
+    "cacheHitRateTarget": 85,
+    "globalAvailability": true
+  },
+  "monitoring": {
+    "cloudwatchLogs": true,
+    "metricsCollection": true,
+    "alerting": {
+      "errorRateThreshold": 5,
+      "responseTimeThreshold": 2000
+    }
+  },
+  "security": {
+    "httpsOnly": true,
+    "corsEnabled": true,
+    "inputValidation": true,
+    "pathTraversalProtection": true
+  }
+}
